@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finanse osobiste - dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <header class="bg-slate-900 text-white">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+      <div>
+        <h1 class="text-xl font-semibold">Finanse osobiste</h1>
+        <p class="text-sm text-slate-300">Kontrola budżetu, oszczędzanie i planowanie</p>
+      </div>
+      <div class="text-right">
+        <p class="text-sm">Aktualny czas</p>
+        <p class="text-lg font-semibold" id="clock">00:00</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 py-8">
+    <section class="grid gap-6 lg:grid-cols-3">
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Saldo vs zadłużenie</h2>
+        <div class="mt-4 space-y-2">
+          <p class="text-sm text-slate-500">Przychody</p>
+          <p class="text-2xl font-semibold text-emerald-600" id="incomeTotal">0 zł</p>
+          <p class="text-sm text-slate-500">Wydatki</p>
+          <p class="text-2xl font-semibold text-rose-500" id="expenseTotal">0 zł</p>
+          <p class="text-sm text-slate-500">Saldo</p>
+          <p class="text-2xl font-semibold" id="balanceTotal">0 zł</p>
+        </div>
+      </div>
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Nadchodzące wydarzenia</h2>
+        <ul class="mt-4 space-y-2" id="upcomingEvents" aria-live="polite"></ul>
+      </div>
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Dodaj budżet</h2>
+        <form class="mt-4 space-y-3" id="budgetForm">
+          <label class="block text-sm">
+            Miesiąc
+            <input class="mt-1 w-full rounded border px-3 py-2" type="month" name="month" required />
+          </label>
+          <label class="block text-sm">
+            Kwota budżetu
+            <input class="mt-1 w-full rounded border px-3 py-2" type="number" name="amount" min="0" step="0.01" required />
+          </label>
+          <button class="w-full rounded bg-slate-900 px-4 py-2 text-white" type="submit">Zapisz budżet</button>
+        </form>
+        <ul class="mt-4 space-y-1 text-sm text-slate-600" id="budgetList"></ul>
+      </div>
+    </section>
+
+    <section class="mt-10 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-xl bg-white p-6 shadow">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Kalendarz finansowy</h2>
+          <button class="rounded border px-3 py-1 text-sm" id="addEventBtn">Dodaj wydarzenie</button>
+        </div>
+        <div class="mt-4" id="calendar"></div>
+      </div>
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Kategorie wydarzeń</h2>
+        <p class="mt-2 text-sm text-slate-500">Filtruj i oznaczaj wydarzenia według typu.</p>
+        <div class="mt-4 flex flex-wrap gap-2" id="categoryTags"></div>
+      </div>
+    </section>
+
+    <section class="mt-10 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Rejestr wydatków i przychodów</h2>
+        <form class="mt-4 grid gap-3 sm:grid-cols-2" id="transactionForm">
+          <label class="text-sm">Kwota
+            <input class="mt-1 w-full rounded border px-3 py-2" type="number" name="amount" min="0" step="0.01" required />
+          </label>
+          <label class="text-sm">Typ
+            <select class="mt-1 w-full rounded border px-3 py-2" name="type" required>
+              <option value="expense">Wydatek</option>
+              <option value="income">Przychód</option>
+            </select>
+          </label>
+          <label class="text-sm">Kategoria
+            <input class="mt-1 w-full rounded border px-3 py-2" type="text" name="category" required />
+          </label>
+          <label class="text-sm">Data
+            <input class="mt-1 w-full rounded border px-3 py-2" type="date" name="date" required />
+          </label>
+          <label class="text-sm sm:col-span-2">Opis
+            <input class="mt-1 w-full rounded border px-3 py-2" type="text" name="description" />
+          </label>
+          <label class="text-sm sm:col-span-2">Side hustle (opcjonalne)
+            <input class="mt-1 w-full rounded border px-3 py-2" type="text" name="sideHustle" />
+          </label>
+          <button class="sm:col-span-2 rounded bg-emerald-500 px-4 py-2 text-white" type="submit">Dodaj transakcję</button>
+        </form>
+        <div class="mt-6 max-h-64 overflow-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="sticky top-0 bg-white">
+              <tr>
+                <th class="pb-2">Data</th>
+                <th class="pb-2">Opis</th>
+                <th class="pb-2">Kategoria</th>
+                <th class="pb-2">Kwota</th>
+                <th class="pb-2"></th>
+              </tr>
+            </thead>
+            <tbody id="transactionsTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Analiza wydatków</h2>
+        <canvas id="expenseChart" class="mt-4"></canvas>
+        <div class="mt-6 rounded-lg bg-slate-100 p-4">
+          <p class="text-sm font-semibold">Cele SMART</p>
+          <p class="text-sm text-slate-600">Monitoruj progres i analizuj wyniki każdego miesiąca.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-10 grid gap-6 lg:grid-cols-3">
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Cele oszczędnościowe</h2>
+        <form class="mt-4 space-y-3" id="goalForm">
+          <input class="w-full rounded border px-3 py-2" type="text" name="name" placeholder="Nazwa celu" required />
+          <input class="w-full rounded border px-3 py-2" type="number" name="targetAmount" min="0" step="0.01" placeholder="Kwota docelowa" required />
+          <input class="w-full rounded border px-3 py-2" type="number" name="currentAmount" min="0" step="0.01" placeholder="Aktualny stan" required />
+          <input class="w-full rounded border px-3 py-2" type="date" name="targetDate" required />
+          <button class="w-full rounded bg-slate-900 px-4 py-2 text-white" type="submit">Dodaj cel</button>
+        </form>
+        <div class="mt-4 space-y-3" id="goalList"></div>
+      </div>
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Lista "na wstrzymanie"</h2>
+        <form class="mt-4 space-y-3" id="holdForm">
+          <input class="w-full rounded border px-3 py-2" type="text" name="name" placeholder="Planowany zakup" required />
+          <input class="w-full rounded border px-3 py-2" type="number" name="price" min="0" step="0.01" placeholder="Cena" required />
+          <button class="w-full rounded bg-amber-500 px-4 py-2 text-white" type="submit">Dodaj do listy</button>
+        </form>
+        <ul class="mt-4 space-y-2 text-sm" id="holdList"></ul>
+      </div>
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Priorytety miesiąca</h2>
+        <form class="mt-4 space-y-3" id="priorityForm">
+          <input class="w-full rounded border px-3 py-2" type="text" name="title" placeholder="Cel na miesiąc" required />
+          <input class="w-full rounded border px-3 py-2" type="month" name="month" required />
+          <button class="w-full rounded bg-indigo-500 px-4 py-2 text-white" type="submit">Dodaj priorytet</button>
+        </form>
+        <ul class="mt-4 space-y-2 text-sm" id="priorityList"></ul>
+      </div>
+    </section>
+
+    <section class="mt-10 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Baza wiedzy</h2>
+        <div class="mt-4 space-y-4" id="knowledgeList"></div>
+      </div>
+      <div class="rounded-xl bg-white p-6 shadow">
+        <h2 class="text-lg font-semibold">Kursy walut</h2>
+        <div class="mt-4 text-sm text-slate-600" id="currencyRates"></div>
+        <div class="mt-6 rounded-lg bg-slate-100 p-4">
+          <p class="text-sm font-semibold">Podcasty i linki</p>
+          <ul class="mt-2 list-disc pl-4 text-sm text-slate-600">
+            <li><a class="text-blue-600 underline" href="https://www.nbp.pl" target="_blank" rel="noreferrer">NBP - dane rynkowe</a></li>
+            <li><a class="text-blue-600 underline" href="https://www.money.pl" target="_blank" rel="noreferrer">Money.pl</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-10 rounded-xl bg-white p-6 shadow">
+      <div class="grid gap-6 lg:grid-cols-2">
+        <div>
+          <h2 class="text-lg font-semibold">Logowanie / Rejestracja</h2>
+          <form class="mt-4 space-y-3" id="loginForm" aria-label="Logowanie">
+            <input class="w-full rounded border px-3 py-2" type="email" name="email" placeholder="Email" required />
+            <input class="w-full rounded border px-3 py-2" type="password" name="password" placeholder="Hasło" required />
+            <div class="flex gap-3">
+              <button class="flex-1 rounded bg-slate-900 px-4 py-2 text-white" type="submit">Zaloguj</button>
+              <button class="flex-1 rounded border px-4 py-2" type="button" id="registerBtn">Zarejestruj</button>
+            </div>
+          </form>
+          <form class="mt-6 space-y-3" id="passwordForm">
+            <input class="w-full rounded border px-3 py-2" type="password" name="currentPassword" placeholder="Aktualne hasło" required />
+            <input class="w-full rounded border px-3 py-2" type="password" name="newPassword" placeholder="Nowe hasło" required />
+            <button class="w-full rounded bg-rose-500 px-4 py-2 text-white" type="submit">Zmień hasło</button>
+          </form>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold">Konfiguracja startowa</h2>
+          <p class="mt-2 text-sm text-slate-600">Ustaw preferencje aplikacji i pierwsze kategorie.</p>
+          <form class="mt-4 space-y-3" id="setupForm">
+            <input class="w-full rounded border px-3 py-2" type="text" name="favoriteCategory" placeholder="Ulubiona kategoria" />
+            <input class="w-full rounded border px-3 py-2" type="text" name="monthlyGoal" placeholder="Cel oszczędnościowy" />
+            <button class="w-full rounded bg-emerald-500 px-4 py-2 text-white" type="submit">Zapisz ustawienia</button>
+          </form>
+          <div class="mt-4 rounded-lg bg-slate-100 p-4 text-sm" id="setupSummary"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-slate-900 py-6 text-center text-sm text-slate-300">
+    <p>Finanse osobiste • demonstracyjna aplikacja webowa</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+#calendar .fc {
+  font-size: 0.85rem;
+}
+
+#calendar .fc-toolbar-title {
+  font-size: 1rem;
+}
+
+#transactionsTable tr + tr {
+  border-top: 1px solid #e2e8f0;
+}
+
+@media (max-width: 640px) {
+  header .text-right {
+    display: none;
+  }
+}
